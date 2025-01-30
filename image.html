@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ 
+  <title>Driving License Scanner</title>
+
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #000;
+      overflow: hidden;
+    }
+    .scanner-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      /* backdrop-filter: blur(8px); */
+    }
+    .scanner {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 60vw;
+      height: 30vh;
+      border: 3px solid red;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.1);
+      box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+    }
+    .buttons {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+    }
+    button {
+      background: #ff4b4b;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    button:focus {
+      outline: none;
+    }
+    #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+  </style>
+</head>
+<body>
+
+  <div class="scanner-container">
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas" style="display: none;"></canvas>
+
+    <div class="overlay"></div>
+    <div class="scanner"></div>
+    <div class="buttons">
+      <button id="toggle-camera">🔄 Change Camera</button>
+      <button id="capture">📸 Capture</button>
+      <!-- <button id="upload">Upload to Server</button> -->
+    
+ 
+    </div>
+    <div id="loading">Please wait while we upload the image...</div>
+
+  </div>
+
+
+
+ 
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const toggleCameraButton = document.getElementById('toggle-camera');
+    const captureButton = document.getElementById('capture');
+    const uploadButton = document.getElementById('upload');
+    let loading = document.getElementById('loading');
+
+    let currentStream = null;
+    let useFrontCamera = false; // Default to the front camera
+
+    // Start the camera
+    async function startCamera() {
+      if (currentStream) {
+        // Stop any active tracks if the camera is already running
+        currentStream.getTracks().forEach((track) => track.stop());
+      }
+
+      const constraints = {
+        video: {
+          facingMode: useFrontCamera ? 'user' : 'environment', // 'user' = front, 'environment' = back
+        },
+      };
+
+      try {
+        currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+        video.srcObject = currentStream;
+      } catch (error) {
+        console.error('Error accessing camera:', error);
+        alert('Could not access the camera.');
+      }
+    }
+
+    // Toggle camera
+    toggleCameraButton.addEventListener('click', () => {
+      useFrontCamera = !useFrontCamera; // Switch between front and back
+      startCamera();
+    });
+
+    // Capture the image
+    captureButton.addEventListener('click', () => {
+      const context = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const imageData = canvas.toDataURL('image/png'); // Base64 encoded image
+      loading.style.display = 'block';
+
+      fetch('http://46.202.177.168:3001/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ image: imageData }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log('Response from server:', data);
+          loading.style.display = 'none';
+
+          alert(JSON.stringify(data));
+        })
+        .catch((error) => {
+          console.error('Error uploading image:', error);
+        });
+      // alert('Image captured! Click upload to send to the server.');
+    });
+
+    // Upload to server
+    // uploadButton.addEventListener('click', () => {
+     
+    // });
+
+    // Start the camera when the page loads
+    startCamera();
+  </script>
+</body>
+</html>
