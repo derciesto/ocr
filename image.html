@@ -152,7 +152,7 @@
       const imageData = canvas.toDataURL('image/png'); // Base64 encoded image
       loading.style.display = 'block';
 
-      fetch('http://46.202.177.168:3001/upload', {
+      fetch('https://ocr-ivory.vercel.app/upload', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
