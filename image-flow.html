@@ -238,10 +238,9 @@
 
         <div class="row g-3">
           <div class="col-md-12">
-            <div
-              class="card id-option-card text-center"
-              style="height: 200px; background-color: #e8e8e8"
-            ></div>
+            <ul class="list-group"  id="metadata">
+           
+            </ul>
             <button class="btn btn-success col-12" onclick="restartAll()">
               Restart
             </button>
@@ -374,6 +373,8 @@
 
       // Upload to server
       uploadButton.addEventListener("click", () => {
+        $("#step3").hide();
+        $("#step4").show();
         const imageData = canvas.toDataURL("image/png"); // Base64 encoded image
         console.log(imageData);
         fetch("https://ocr-ivory.vercel.app/upload", {
@@ -388,7 +389,16 @@
             console.log("Response from server:", data);
             $("#step4").hide();
             $("#step5").show();
-            alert(JSON.stringify(data));
+            if (data.extractedData) {
+              $('#metadata').append(`
+                <li class="list-group-item">Name: ${data.extractedData.FIRST_NAME +' ' + data.extractedData.MIDDLE_NAME + ' ' + data.extractedData.LAST_NAME }</li>
+                <li class="list-group-item">Date of Birth: ${data.extractedData.DATE_OF_BIRTH}</li>
+                <li class="list-group-item">Address: ${data.extractedData.ADDRESS}</li>
+                <li class="list-group-item">ID Number: ${data.extractedData.ID_TYPE}</li>
+                <li class="list-group-item">Expiration Date: ${data.extractedData.EXPIRATION_DATE}</li>
+                <li class="list-group-item">ID_TYPE: ${data.extractedData.ID_TYPE}</li>
+                `)
+            }
           })
           .catch((error) => {
             console.error("Error uploading image:", error);
