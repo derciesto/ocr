@@ -30,6 +30,9 @@ app.get('/', (req, res) => {
 app.get('/image', function (req, res) {
   res.sendFile(__dirname + '/image.html');
 });
+app.get('/image-flow', function (req, res) {
+  res.sendFile(__dirname + '/image-flow.html');
+});
 app.use('/static', express.static(publicFolderPath));
 
 
