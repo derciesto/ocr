@@ -19,8 +19,8 @@ app.use(bodyParser.json({ limit: '10mb' })); // Increase limit for large images
 // Initialize Textract Client
 const client = new TextractClient({
   region: 'us-east-1', credentials: {
-    accessKeyId: "AKIA6GBMBFOGY5WNZZWW",
-    secretAccessKey: "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"
+    accessKeyId: "AKIAW5UOPARQP3GJDPKA",
+    secretAccessKey: "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"
   }
 });
 
